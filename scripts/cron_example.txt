@@ -1,0 +1,24 @@
+# ── Cron Examples for Ticker Agent ──────────────────────────────────────────
+# Add to crontab with: crontab -e
+#
+# Assumes:
+#   - Python venv at /opt/ticker-agent/.venv
+#   - Project at /opt/ticker-agent
+#   - .env file at project root
+#
+# Format: MIN HOUR DOM MON DOW COMMAND
+
+# Run full Tier-2 analysis on key tickers every day at 09:35 ET (pre-market settled)
+35 9 * * 1-5 cd /opt/ticker-agent && .venv/bin/ticker-agent analyse AAPL MSFT NVDA TSLA --tier 2 >> logs/cron.log 2>&1
+
+# Quick Tier-1 pass every 30 minutes during market hours (9:30am–4:00pm ET)
+*/30 9-15 * * 1-5 cd /opt/ticker-agent && .venv/bin/ticker-agent analyse AAPL MSFT --tier 1 --no-llm >> logs/cron.log 2>&1
+
+# End-of-day full batch report at 4:15pm ET, Monday–Friday
+15 16 * * 1-5 cd /opt/ticker-agent && .venv/bin/ticker-agent analyse AAPL MSFT GOOGL AMZN NVDA TSLA META --format markdown >> logs/cron.log 2>&1
+
+# Weekly health check every Monday at 8:00am
+0 8 * * 1 cd /opt/ticker-agent && .venv/bin/ticker-agent health >> logs/cron.log 2>&1
+
+# Alternative: use the built-in daemon (run as a systemd service instead of cron)
+#   ticker-agent watch --tier1 AAPL NVDA TSLA --tier2 MSFT GOOGL AMZN META JPM

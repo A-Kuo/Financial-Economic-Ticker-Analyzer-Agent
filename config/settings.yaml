@@ -1,0 +1,88 @@
+# ── Ticker Agent Configuration ────────────────────────────────────────────────
+
+# Default tickers to monitor (can be overridden via CLI --tickers flag)
+tickers:
+  - AAPL
+  - MSFT
+  - GOOGL
+  - AMZN
+  - NVDA
+  - TSLA
+  - META
+  - BRK-B
+  - JPM
+  - V
+
+# ── Monitoring Tiers ──────────────────────────────────────────────────────────
+# tier1: high-frequency checks (every 5 min during market hours)
+# tier2: standard checks (every 30 min)
+monitoring:
+  tier1_tickers: ["AAPL", "MSFT", "NVDA", "TSLA"]
+  tier2_tickers: ["GOOGL", "AMZN", "META", "BRK-B", "JPM", "V"]
+  tier1_interval_minutes: 5
+  tier2_interval_minutes: 30
+  market_open: "09:30"
+  market_close: "16:00"
+  timezone: "America/New_York"
+
+# ── Data Fetching ─────────────────────────────────────────────────────────────
+data:
+  price_history_days: 90        # days of OHLCV history to fetch
+  news_articles_per_ticker: 5   # NewsAPI articles per ticker per cycle
+  news_lookback_hours: 24       # how far back to search for news
+  yfinance_timeout: 10          # seconds
+
+# ── Analysis ─────────────────────────────────────────────────────────────────
+analysis:
+  technical:
+    rsi_period: 14
+    macd_fast: 12
+    macd_slow: 26
+    macd_signal: 9
+    bb_period: 20
+    bb_std: 2.0
+    sma_short: 20
+    sma_long: 50
+  scoring:
+    technical_weight: 0.40
+    fundamental_weight: 0.35
+    sentiment_weight: 0.25
+    alert_threshold_bullish: 70   # score out of 100
+    alert_threshold_bearish: 30
+
+# ── Ollama / LLM ─────────────────────────────────────────────────────────────
+llm:
+  model: "llama3.2"
+  base_url: "http://localhost:11434"
+  temperature: 0.1
+  max_tokens: 1024
+  timeout: 60
+  # System prompt context injected for all analyses
+  system_context: |
+    You are a senior financial analyst specialising in equity markets.
+    Respond concisely with actionable insights. Always cite data points.
+    Flag uncertainty clearly. Do NOT give personalised investment advice.
+
+# ── Output ────────────────────────────────────────────────────────────────────
+output:
+  console:
+    color: true
+    show_scores: true
+    show_technicals: true
+  reports:
+    dir: "reports"
+    format: "json"           # json | html | markdown
+    keep_last: 30            # number of report files to retain
+
+# ── Database ─────────────────────────────────────────────────────────────────
+database:
+  url: "sqlite:///data/ticker_agent.db"
+  echo: false
+
+# ── Pipeline Integration ──────────────────────────────────────────────────────
+pipeline:
+  # Stage 1: FinDocAnalyzer webhook (optional — leave blank to disable)
+  findoc_ingest_path: "/ingest"
+  # Stage 3: Push enriched data to Agentic-Visualization-Framework (optional)
+  viz_push_enabled: false
+  viz_push_path: "/api/v1/ingest"

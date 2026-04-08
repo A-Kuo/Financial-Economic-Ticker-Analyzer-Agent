@@ -1,0 +1,97 @@
+tickers:
+  # Tier 1 — high-value focus stocks (analyzed more frequently)
+  tier1:
+    - AAPL    # Apple
+    - MSFT    # Microsoft
+    - NVDA    # NVIDIA
+    - GOOGL   # Alphabet
+    - AMZN    # Amazon
+    - META    # Meta Platforms
+    - TSLA    # Tesla
+    - BRK-B   # Berkshire Hathaway
+    - JPM     # JPMorgan Chase
+    - V       # Visa
+
+  # Tier 2 — broader S&P-like basket (~45 companies across sectors)
+  tier2:
+    # Technology
+    - AMD     # Advanced Micro Devices
+    - INTC    # Intel
+    - ORCL    # Oracle
+    - CRM     # Salesforce
+    - ADBE    # Adobe
+    - QCOM    # Qualcomm
+    - TXN     # Texas Instruments
+    - AVGO    # Broadcom
+    # Financials
+    - BAC     # Bank of America
+    - GS      # Goldman Sachs
+    - WFC     # Wells Fargo
+    - MS      # Morgan Stanley
+    - AXP     # American Express
+    - C       # Citigroup
+    - BLK     # BlackRock
+    # Healthcare
+    - JNJ     # Johnson & Johnson
+    - UNH     # UnitedHealth
+    - PFE     # Pfizer
+    - ABBV    # AbbVie
+    - MRK     # Merck
+    - LLY     # Eli Lilly
+    - BMY     # Bristol-Myers Squibb
+    # Energy
+    - XOM     # ExxonMobil
+    - CVX     # Chevron
+    - COP     # ConocoPhillips
+    - SLB     # SLB (Schlumberger)
+    # Consumer Staples / Discretionary
+    - WMT     # Walmart
+    - COST    # Costco
+    - TGT     # Target
+    - HD      # Home Depot
+    - NKE     # Nike
+    - MCD     # McDonald's
+    - SBUX    # Starbucks
+    - PG      # Procter & Gamble
+    - KO      # Coca-Cola
+    - PEP     # PepsiCo
+    # Industrials
+    - CAT     # Caterpillar
+    - DE      # Deere & Company
+    - UPS     # UPS
+    - GE      # GE Aerospace
+    - BA      # Boeing
+    # Telecom / Utilities
+    - T       # AT&T
+    - VZ      # Verizon
+    - NEE     # NextEra Energy
+
+agent:
+  model: llama3.2            # Ollama model — change to llama3.3 for larger context
+  news_lookback_hours: 24    # How far back to pull news
+  max_news_articles: 5       # Articles to analyze per ticker
+  analysis_depth: quick      # quick | deep (deep = more AI tokens)
+
+thresholds:
+  price_change_pct: 5.0      # Alert on ≥5% daily price move
+  rsi_overbought: 70.0
+  rsi_oversold: 30.0
+  volume_spike_ratio: 2.0    # Alert when volume > 2x 10-day average
+  sentiment_negative_floor: -0.5
+
+schedule:
+  run_times:                 # Full-basket runs (24h UTC)
+    - "14:00"                # ~9am ET (market open)
+    - "21:00"                # ~4pm ET (market close)
+  tier1_interval_minutes: 60 # Tier 1 re-analyzed every hour during the day
+
+scoring:
+  weights:
+    technical: 0.40
+    fundamental: 0.30
+    sentiment: 0.30
+
+storage:
+  db_path: data/ticker_agent.db
+  reports_dir: reports
+  logs_dir: logs

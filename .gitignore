@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+.env
+
+# Runtime data (auto-created, not versioned)
+data/*.db
+data/*.db-journal
+logs/*.log
+logs/*.txt
+reports/*.md
+reports/*.html
+
+# Keep directory stubs
+!data/.gitkeep
+!logs/.gitkeep
+!reports/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+htmlcov/

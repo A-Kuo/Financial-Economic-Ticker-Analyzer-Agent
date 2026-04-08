@@ -1,0 +1,38 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Ticker Agent — example crontab entries
+# Run `crontab -e` and paste whichever approach you prefer.
+# Adjust paths to match your install location.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# APPROACH 1: Use the built-in daemon (recommended)
+# Starts on system boot; handles its own schedule (see config/settings.yaml).
+#
+# @reboot cd /path/to/Financial-Economic-Ticker-Analyzer-Agent && \
+#         .venv/bin/ticker daemon >> logs/daemon.log 2>&1
+
+
+# APPROACH 2: Drive cron yourself (more control, no long-running process)
+#
+# Full-basket run at US market open (9am ET = 14:00 UTC) on weekdays:
+# 0 14 * * 1-5  cd /path/to/project && .venv/bin/ticker analyze --save-report >> logs/cron.log 2>&1
+#
+# Full-basket run at US market close (4pm ET = 21:00 UTC) on weekdays:
+# 0 21 * * 1-5  cd /path/to/project && .venv/bin/ticker analyze --save-report >> logs/cron.log 2>&1
+#
+# Tier 1 only — every hour during trading hours (9am–4pm ET):
+# 0 14-21 * * 1-5  cd /path/to/project && .venv/bin/ticker analyze --tier 1 >> logs/cron.log 2>&1
+
+
+# APPROACH 3: systemd service (Linux preferred for production)
+# See scripts/ticker-agent.service.example for a systemd unit file template.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Quick-start reminder:
+#   python -m venv .venv
+#   .venv/bin/pip install -e .
+#   cp .env.example .env  && edit .env
+#   ollama pull llama3.2
+#   .venv/bin/ticker status
+#   .venv/bin/ticker analyze --tier 1 --detail
+# ─────────────────────────────────────────────────────────────────────────────

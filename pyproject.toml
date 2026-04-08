@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "ticker-agent"
+version = "0.1.0"
+description = "Financial/Economic Ticker Analyzer with Local AI Agents (Ollama)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "yfinance>=0.2.40",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "ollama>=0.3.0",
+    "newsapi-python>=0.2.7",
+    "rich>=13.7",
+    "click>=8.1",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "schedule>=1.2",
+    "requests>=2.31",
+]
+
+[project.scripts]
+ticker = "ticker_agent.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]

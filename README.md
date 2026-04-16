@@ -189,6 +189,41 @@ score  < 25 → STRONG_SELL
 
 ---
 
+## Technical Assumptions & Limitations
+
+### Data Ranges
+- **RSI:** 0–100 (oversold < 30, overbought > 70)
+- **Sentiment score:** -1.0 (bearish) to +1.0 (bullish), mapped to 0–100 for composite score
+- **P/E ratio:** Positive values assumed; negative earnings (loss-making) scored as neutral
+- **Dividend yield:** Expressed as decimal (e.g., 0.03 = 3%)
+- **Beta:** Market beta; values < 0.5 or > 2.0 are extreme outliers
+
+### AI (Ollama) Assumptions
+- The selected Ollama model outputs structured text with fixed format (SUMMARY, SENTIMENT, CATALYSTS, OUTLOOK)
+- Sentiment values are clamped to [-1, 1]; out-of-range values are logged as warnings
+- If Ollama is unavailable, sentiment reverts to keyword-based heuristic (may be less accurate)
+- No financial AI training occurs; the system uses general-purpose LLMs (llama3.2, mistral, etc.)
+
+### Analysis Constraints
+- **No backtesting framework** — results are based on current/recent data only
+- **No portfolio optimization** — each ticker is analyzed independently
+- **No transaction costs** — signals don't account for fees, slippage, or taxes
+- **Not suitable for algorithmic trading** — designed for human-in-the-loop research
+- **Historical data:** 6 months OHLCV for technical analysis; configurable news lookback
+
+### Data Sources
+- **Prices & fundamentals:** yfinance (free, no API key, ~15-min delay, no intraday)
+- **News:** NewsAPI (free tier = 25 req/day, limited to major outlets)
+- **AI reasoning:** Ollama (local, offline-capable)
+
+### Validation & Edge Cases
+- Configuration is validated on startup; invalid config will raise an error with clear messages
+- Missing data (e.g., no quote fetched) degrades to neutral scores (50.0) with logging
+- Database is SQLite; not suitable for concurrent writes (single-user/single-machine only)
+- Scheduled daemon assumes system clock is accurate for UTC scheduling
+
+---
+
 ## Disclaimer
 
-This tool is for **informational and educational purposes only**. It does not constitute financial advice. Always do your own research before making investment decisions.
+This tool is for **informational and educational purposes only**. It does not constitute financial advice. Always do your own research before making investment decisions. **Past performance is not indicative of future results.**

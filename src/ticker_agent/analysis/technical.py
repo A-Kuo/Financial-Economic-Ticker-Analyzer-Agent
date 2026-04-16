@@ -15,7 +15,18 @@ logger = logging.getLogger(__name__)
 # ── Indicator functions ────────────────────────────────────────────────────────
 
 def compute_rsi(prices: pd.Series, period: int = 14) -> float | None:
-    """Wilder's RSI using exponential smoothing. Returns None if insufficient data."""
+    """Wilder's RSI using exponential smoothing.
+
+    Computes the Relative Strength Index, which measures momentum by comparing
+    average gains to average losses over a period. Returns None if insufficient data.
+
+    Args:
+        prices: Series of closing prices.
+        period: Look-back period (default 14).
+
+    Returns:
+        RSI value 0–100, or None if insufficient data.
+    """
     if len(prices) < period + 1:
         return None
     delta = prices.diff().dropna()

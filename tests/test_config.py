@@ -90,3 +90,46 @@ class TestEnvironmentOverrides:
                 os.environ["OLLAMA_MODEL"] = old_model
             else:
                 os.environ.pop("OLLAMA_MODEL", None)
+
+
+class TestConfigValidation:
+    def test_valid_config_passes(self):
+        """Default config should pass validation."""
+        cfg = load_config()
+        # If we get here without exception, validation passed
+        assert cfg is not None
+
+    def test_rsi_thresholds_invalid_order(self):
+        """RSI oversold >= overbought should fail."""
+        from ticker_agent.config import validate_config
+        cfg = load_config()
+        cfg.thresholds.rsi_oversold = 80.0
+        cfg.thresholds.rsi_overbought = 20.0
+        with pytest.raises(ValueError, match="rsi_oversold.*must be <"):
+            validate_config(cfg)
+
+    def test_sentiment_negative_floor_out_of_range(self):
+        """Sentiment floor must be in [-1, 1]."""
+        from ticker_agent.config import validate_config
+        cfg = load_config()
+        cfg.thresholds.sentiment_negative_floor = -2.0
+        with pytest.raises(ValueError, match="sentiment_negative_floor"):
+            validate_config(cfg)
+
+    def test_scoring_weights_must_sum_to_one(self):
+        """Scoring weights must sum to 1.0."""
+        from ticker_agent.config import validate_config
+        cfg = load_config()
+        cfg.scoring.technical = 0.6
+        cfg.scoring.fundamental = 0.3
+        cfg.scoring.sentiment = 0.3  # Sum = 1.2, invalid
+        with pytest.raises(ValueError, match="must sum to 1.0"):
+            validate_config(cfg)
+
+    def test_tier1_cannot_be_empty(self):
+        """Tier 1 tickers cannot be empty."""
+        from ticker_agent.config import validate_config
+        cfg = load_config()
+        cfg.tickers.tier1 = []
+        with pytest.raises(ValueError, match="tier1 cannot be empty"):
+            validate_config(cfg)

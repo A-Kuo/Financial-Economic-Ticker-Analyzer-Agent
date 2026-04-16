@@ -69,6 +69,7 @@ class NewsAgent(BaseAgent):
         sentiment = 0.0
         catalysts: list[str] = []
         outlook = ""
+        sentiment_found = False
 
         for line in raw.splitlines():
             stripped = line.strip()
@@ -76,13 +77,29 @@ class NewsAgent(BaseAgent):
                 summary = stripped[len("SUMMARY:"):].strip()
             elif stripped.startswith("SENTIMENT:"):
                 val_str = stripped[len("SENTIMENT:"):].strip()
-                # Extract first float-like token
+                # Extract signed decimal matching [-1.0, 1.0] range
                 m = re.search(r"-?\d+\.?\d*", val_str)
                 if m:
                     try:
-                        sentiment = max(-1.0, min(1.0, float(m.group())))
+                        raw_val = float(m.group())
+                        if -2.0 <= raw_val <= 2.0:  # Sanity check for parsing errors
+                            sentiment = max(-1.0, min(1.0, raw_val))
+                            sentiment_found = True
+                            if abs(raw_val - sentiment) > 0.01:
+                                logger.debug(
+                                    "%s: sentiment %f clamped from %f",
+                                    symbol, sentiment, raw_val
+                                )
+                        else:
+                            logger.warning(
+                                "%s: sentiment parsing returned %f (parsing error?)",
+                                symbol, raw_val
+                            )
                     except ValueError:
+                        logger.warning("%s: failed to parse sentiment value from '%s'", symbol, val_str)
                         sentiment = 0.0
+                else:
+                    logger.warning("%s: SENTIMENT line found but no numeric value parsed", symbol)
             elif stripped.startswith("- "):
                 catalysts.append(stripped[2:])
             elif stripped.startswith("OUTLOOK:"):

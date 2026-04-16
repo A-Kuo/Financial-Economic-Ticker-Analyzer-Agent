@@ -91,8 +91,18 @@ class Orchestrator:
 
         # 5. Component scores
         tech_score = score_technical(signals) if signals else 50.0
-        fund_score = compute_fundamental_score(quote)
-        # Map sentiment -1..+1 → 0..100
+        try:
+            fund_score = compute_fundamental_score(quote)
+        except Exception as exc:
+            logger.error("Fundamental score computation failed for %s: %s", symbol, exc)
+            fund_score = 50.0
+        # Map sentiment -1..+1 → 0..100 (clamped to valid range)
+        if not -1.0 <= sentiment_score <= 1.0:
+            logger.warning(
+                "%s: sentiment_score %f out of bounds [-1, 1], clamping",
+                symbol, sentiment_score
+            )
+            sentiment_score = max(-1.0, min(1.0, sentiment_score))
         sent_score = round((sentiment_score + 1.0) / 2.0 * 100.0, 2)
 
         # 6. AI reasoning

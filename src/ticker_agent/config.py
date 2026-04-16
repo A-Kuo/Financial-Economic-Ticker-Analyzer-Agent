@@ -74,6 +74,50 @@ class AppConfig:
     ollama_host: str = "http://localhost:11434"
 
 
+def validate_config(cfg: AppConfig) -> None:
+    """Validate config for reasonable values. Raises ValueError on invalid config."""
+    # Tickers
+    if not cfg.tickers.tier1:
+        raise ValueError("config: tickers.tier1 cannot be empty")
+    if not cfg.tickers.tier2:
+        raise ValueError("config: tickers.tier2 cannot be empty")
+
+    # Agent config
+    if cfg.agent.news_lookback_hours <= 0:
+        raise ValueError(f"config: agent.news_lookback_hours must be > 0, got {cfg.agent.news_lookback_hours}")
+    if cfg.agent.max_news_articles <= 0:
+        raise ValueError(f"config: agent.max_news_articles must be > 0, got {cfg.agent.max_news_articles}")
+
+    # Thresholds
+    t = cfg.thresholds
+    if not 0 < t.rsi_overbought <= 100:
+        raise ValueError(f"config: thresholds.rsi_overbought must be in (0, 100], got {t.rsi_overbought}")
+    if not 0 <= t.rsi_oversold < 100:
+        raise ValueError(f"config: thresholds.rsi_oversold must be in [0, 100), got {t.rsi_oversold}")
+    if t.rsi_oversold >= t.rsi_overbought:
+        raise ValueError(f"config: rsi_oversold ({t.rsi_oversold}) must be < rsi_overbought ({t.rsi_overbought})")
+    if t.price_change_pct < 0:
+        raise ValueError(f"config: price_change_pct must be >= 0, got {t.price_change_pct}")
+    if t.volume_spike_ratio <= 1.0:
+        raise ValueError(f"config: volume_spike_ratio must be > 1.0, got {t.volume_spike_ratio}")
+    if not -1.0 <= t.sentiment_negative_floor <= 1.0:
+        raise ValueError(f"config: sentiment_negative_floor must be in [-1, 1], got {t.sentiment_negative_floor}")
+
+    # Schedule
+    s = cfg.schedule
+    if s.tier1_interval_minutes <= 0:
+        raise ValueError(f"config: tier1_interval_minutes must be > 0, got {s.tier1_interval_minutes}")
+
+    # Scoring weights
+    sc = cfg.scoring
+    total = sc.technical + sc.fundamental + sc.sentiment
+    if abs(total - 1.0) > 0.01:
+        raise ValueError(
+            f"config: scoring weights must sum to 1.0, got {total} "
+            f"(technical={sc.technical}, fundamental={sc.fundamental}, sentiment={sc.sentiment})"
+        )
+
+
 def load_config(config_path: str | None = None) -> AppConfig:
     """Load AppConfig from YAML file, then overlay environment variables."""
     if config_path is None:
@@ -140,4 +184,6 @@ def load_config(config_path: str | None = None) -> AppConfig:
     if model_env:
         cfg.agent.model = model_env
 
+    # Validate before returning
+    validate_config(cfg)
     return cfg
